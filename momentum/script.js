@@ -2,8 +2,14 @@
 const time = document.querySelector('.time'),
   greeting = document.querySelector('.greeting'),
   name = document.querySelector('.name'),
-  focus = document.querySelector('.focus');
-
+  focus = document.querySelector('.focus'),
+  date2 = document.querySelector('.date'),
+  quote = document.querySelector('.quote'),
+  quoteBtn = document.querySelector('.quoteBtn'),
+  weatherIcon = document.querySelector('.weather-icon'),
+  temperature = document.querySelector('.temperature'),
+  weatherDescription = document.querySelector('.weather-description'),
+  city = document.querySelector('.city');
 // Options
 const showAmPm = true;
 
@@ -12,18 +18,17 @@ function showTime() {
   let today = new Date(),
     hour = today.getHours(),
     min = today.getMinutes(),
-    sec = today.getSeconds();
+    sec = today.getSeconds(),
+    day = today.getDay(),
+    date = today.getDate(),
+    month = today.getMonth()
 
-  // Set AM or PM
-  const amPm = hour >= 12 ? 'PM' : 'AM';
-
-  // 12hr Format
-  hour = hour % 12 || 12;
 
   // Output Time
-  time.innerHTML = `${hour}<span>:</span>${addZero(min)}<span>:</span>${addZero(
-    sec
-  )} ${showAmPm ? amPm : ''}`;
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  date2.innerHTML = `${days[day]}<span> </span>${date}<span> </span>${months[month]}`
+  time.innerHTML = `${hour}<span>:</span>${addZero(min)}<span>:</span>${addZero(sec)}`;
 
   setTimeout(showTime, 1000);
 }
@@ -38,21 +43,26 @@ function setBgGreet() {
   let today = new Date(),
     hour = today.getHours();
 
-  if (hour < 12) {
+  if (hour < 12 && hour > 6) {
     // Morning
     document.body.style.backgroundImage =
       "url('https://i.ibb.co/7vDLJFb/morning.jpg')";
     greeting.textContent = 'Good Morning, ';
-  } else if (hour < 18) {
+  } else if (hour < 18 && hour > 12) {
     // Afternoon
     document.body.style.backgroundImage =
       "url('https://i.ibb.co/3mThcXc/afternoon.jpg')";
     greeting.textContent = 'Good Afternoon, ';
-  } else {
+  }  else if (hour < 24 && hour >18) {
     // Evening
     document.body.style.backgroundImage =
-      "url('https://i.ibb.co/924T2Wv/night.jpg')";
+      "url('/Users/elizaveta.nikolaevich/Desktop/ready-projects/momentum/assets/images/evening/04.jpg')";
     greeting.textContent = 'Good Evening, ';
+  }else {
+    // Night
+    document.body.style.backgroundImage =
+      "url('https://i.ibb.co/924T2Wv/night.jpg')";
+    greeting.textContent = 'Good Night, ';
     document.body.style.color = 'white';
   }
 }
@@ -101,13 +111,43 @@ function setFocus(e) {
   }
 }
 
+async function quoteFeature() {
+  const url = 'https://api.chucknorris.io/jokes/random';
+  let getInfo = await fetch(url);
+  let result = await getInfo.json();
+  quote.innerHTML = result.value;
+}
+
+async function getWeather() {
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.textContent}&lang=ru&appid=08f2a575dda978b9c539199e54df03b0&units=metric`;
+  const res = await fetch(url);
+  const data = await res.json();
+  weatherIcon.className = 'weather-icon owf';
+  weatherIcon.classList.add(`owf-${data.weather[0].id}`);
+  temperature.textContent = `${data.main.temp}°C`;
+  weatherDescription.textContent = data.weather[0].description;
+}
+
+function setCity(event) {
+  if (event.code === 'Enter') {
+    getWeather();
+    city.blur();
+  }
+}
+
 name.addEventListener('keypress', setName);
 name.addEventListener('blur', setName);
 focus.addEventListener('keypress', setFocus);
 focus.addEventListener('blur', setFocus);
+quoteBtn.addEventListener('click', quoteFeature);
+document.addEventListener('DOMContentLoaded', getWeather);
+city.addEventListener('keypress', setCity);
+
 
 // Run
+//getWeather()
 showTime();
 setBgGreet();
 getName();
 getFocus();
+quoteFeature();
